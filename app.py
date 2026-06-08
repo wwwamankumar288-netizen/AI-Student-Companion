@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai   # 👈 AI import
 
 # 👉 API setup (TOP)
-genai.configure(api_key="YOUR_API_KEY_HERE")
+genai.configure(api_key=AQ.Ab8RN6KwdWziyA_mpCf_oLf9QI3UFYVfgE2Emu_EfXRJsAsxsg)
 
 # 👉 UI (TOP)
 st.title("🎓 AI Student Companion")
