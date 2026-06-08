@@ -1,39 +1,31 @@
 import streamlit as st
+import google.generativeai as genai   # 👈 AI import
 
-st.title("AI Student Companion")
+# 👉 API setup (TOP)
+genai.configure(api_key="YOUR_API_KEY_HERE")
 
-user_input = st.text_input("Ask me anything")
+# 👉 UI (TOP)
+st.title("🎓 AI Student Companion")
+st.markdown("Your smart study assistant 🤖")
+
+# 👉 BUTTONS
+st.subheader("Choose an option 👇")
+
+if st.button("📅 Study Timetable"):
+    st.write("Here’s your study timetable...")
+
+if st.button("📝 Exam Tips"):
+    st.write("Revise, practice PYQs, stay calm!")
+
+if st.button("🔥 Motivation"):
+    st.write("You got this Aman! 💯")
+
+# 👉 AI MODEL (MIDDLE)
+model = genai.GenerativeModel("gemini-pro")
+
+# 👉 USER INPUT (LAST)
+user_input = st.text_input("Ask anything:")
 
 if user_input:
-    user_input = user_input.lower()
-
-    if "study" in user_input or "timetable" in user_input or "plan" in user_input:
-        st.write("📅 Here’s a simple study timetable:")
-        st.write("""
-Morning:
-- 2 hrs coding
-- 1 hr revision
-
-Afternoon:
-- 2 hrs core subjects
-- Practice questions
-
-Evening:
-- 1 hr revision
-- 1 hr light study
-
-Night:
-- Quick revision + plan next day
-        """)
-
-    elif "exam" in user_input:
-        st.write("📝 Exam Tips:")
-        st.write("- Revise important topics")
-        st.write("- Practice PYQs")
-        st.write("- Stay confident")
-
-    elif "motivate" in user_input:
-        st.write("🔥 Keep going Aman! You’ll achieve 9.5+ CGPA 💯")
-
-    else:
-        st.write("Try asking about study plan, timetable, exam or motivation.")
+    response = model.generate_content(user_input)
+    st.write(response.text)
