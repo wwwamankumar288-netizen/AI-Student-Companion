@@ -1,3 +1,7 @@
+import streamlit as st
+
+st.title("AI Student Companion")
+
 user_input = st.text_input("Ask me anything")
 
 if user_input:
@@ -6,30 +10,30 @@ if user_input:
     if "study" in user_input or "timetable" in user_input or "plan" in user_input:
         st.write("📅 Here’s a simple study timetable:")
         st.write("""
-        Morning:
-        - 2 hrs coding
-        - 1 hr revision
+Morning:
+- 2 hrs coding
+- 1 hr revision
 
-        Afternoon:
-        - 2 hrs core subjects
-        - Practice questions
+Afternoon:
+- 2 hrs core subjects
+- Practice questions
 
-        Evening:
-        - 1 hr revision
-        - 1 hr light study / notes
+Evening:
+- 1 hr revision
+- 1 hr light study
 
-        Night:
-        - Quick revision + plan next day
+Night:
+- Quick revision + plan next day
         """)
 
     elif "exam" in user_input:
         st.write("📝 Exam Tips:")
         st.write("- Revise important topics")
-        st.write("- Practice previous papers")
-        st.write("- Stay calm and confident")
+        st.write("- Practice PYQs")
+        st.write("- Stay confident")
 
     elif "motivate" in user_input:
-        st.write("🔥 You got this Aman! Stay consistent, success will follow.")
+        st.write("🔥 Keep going Aman! You’ll achieve 9.5+ CGPA 💯")
 
     else:
-        st.write("Try asking about study plan, timetable, motivation, or exam tips.")
+        st.write("Try asking about study plan, timetable, exam or motivation.")
