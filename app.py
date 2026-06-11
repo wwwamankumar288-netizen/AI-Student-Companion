@@ -1,8 +1,15 @@
 import streamlit as st
 import google.generativeai as genai
+import os
 
-# 🔐 Secure API Key
-genai.configure(api_key=st.secrets["AQ.Ab8RN6KwdWziyA_mpCf_oLf9QI3UFYVfgE2Emu_EfXRJsAsxsg"])
+# 🔐 Secure API Key (Works for both Streamlit Cloud & Local)
+api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+
+if not api_key:
+    st.error("❌ API key not found. Please set GEMINI_API_KEY in Streamlit secrets.")
+    st.stop()
+
+genai.configure(api_key=api_key)
 
 # 🤖 AI Model
 model = genai.GenerativeModel("gemini-pro")
@@ -38,7 +45,7 @@ diet = st.selectbox(
     ["Vegetarian", "Non-Vegetarian", "Vegan"]
 )
 
-# ⚙️ FUNCTION (Efficiency Boost)
+# ⚙️ FUNCTION
 def calculate_footprint(distance, electricity, diet):
     footprint = (distance * 0.21) + (electricity * 0.5)
 
@@ -53,6 +60,8 @@ def calculate_footprint(distance, electricity, diet):
 
 # 📈 RESULT SECTION
 st.subheader("📈 Results")
+
+result = None  # store result globally
 
 if st.button("🌿 Calculate Carbon Footprint"):
     if distance == 0 and electricity == 0:
@@ -69,12 +78,26 @@ if st.button("🌿 Calculate Carbon Footprint"):
         else:
             st.error("❌ High footprint! Take action now.")
 
-# 💡 AI SUGGESTIONS
+# 💡 AI SUGGESTIONS (Personalized)
 if st.button("🌱 Get Tips to Reduce Footprint"):
-    tips = model.generate_content(
-        "Give simple and practical ways for students to reduce carbon footprint"
-    )
-    st.write(tips.text)
+    if distance == 0 and electricity == 0:
+        st.warning("⚠️ Please calculate your footprint first")
+    else:
+        result = calculate_footprint(distance, electricity, diet)
+
+        with st.spinner("Generating AI tips..."):
+            tips = model.generate_content(
+                f"""
+                User Details:
+                - Daily Travel: {distance} km
+                - Electricity: {electricity} units/month
+                - Diet: {diet}
+                - Estimated Footprint: {result:.2f} kg CO2/day
+
+                Give simple, practical, student-friendly ways to reduce this footprint.
+                """
+            )
+        st.write(tips.text)
 
 # 💬 AI CHAT
 st.subheader("💬 Ask AI About Environment")
@@ -82,12 +105,13 @@ st.subheader("💬 Ask AI About Environment")
 user_input = st.text_input("Type your question here...")
 
 if user_input:
-    response = model.generate_content(
-        f"You are an environmental expert. Answer clearly:\n{user_input}"
-    )
+    with st.spinner("Thinking..."):
+        response = model.generate_content(
+            f"You are an environmental expert. Answer clearly and simply:\n{user_input}"
+        )
     st.write(response.text)
 
-# 🧪 BASIC TESTING (Testing Score Boost)
+# 🧪 BASIC TESTING
 st.subheader("🧪 Run Test")
 
 if st.checkbox("Run Sample Test"):
