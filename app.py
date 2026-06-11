@@ -1,12 +1,11 @@
 import streamlit as st
 import google.generativeai as genai
-import os
 
-# 🔐 Secure API Key (Works for both Streamlit Cloud & Local)
-api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+# 🔐 Ask user for API key (safe + easy)
+api_key = st.text_input("Enter your Gemini API Key", type="password")
 
 if not api_key:
-    st.error("❌ API key not found. Please set GEMINI_API_KEY in Streamlit secrets.")
+    st.warning("Please enter your API key to continue")
     st.stop()
 
 genai.configure(api_key=api_key)
@@ -23,22 +22,11 @@ This platform helps users calculate their carbon footprint based on daily activi
 and provides AI-powered suggestions to reduce environmental impact.
 """)
 
-st.caption("Enter your daily habits to estimate your environmental impact.")
-
 # 📊 INPUT SECTION
 st.subheader("📊 Enter Your Daily Data")
 
-distance = st.number_input(
-    "🚗 Daily Travel (km)",
-    min_value=0.0,
-    help="Enter how many kilometers you travel daily"
-)
-
-electricity = st.number_input(
-    "⚡ Monthly Electricity Usage (units)",
-    min_value=0.0,
-    help="Enter your monthly electricity consumption"
-)
+distance = st.number_input("🚗 Daily Travel (km)", min_value=0.0)
+electricity = st.number_input("⚡ Monthly Electricity Usage (units)", min_value=0.0)
 
 diet = st.selectbox(
     "🍽️ Your Diet Type",
@@ -58,62 +46,36 @@ def calculate_footprint(distance, electricity, diet):
 
     return footprint
 
-# 📈 RESULT SECTION
-st.subheader("📈 Results")
-
-result = None  # store result globally
-
+# 📈 CALCULATE
 if st.button("🌿 Calculate Carbon Footprint"):
     if distance == 0 and electricity == 0:
-        st.warning("⚠️ Please enter some data to calculate footprint")
+        st.warning("Enter some data first")
     else:
         result = calculate_footprint(distance, electricity, diet)
+        st.success(f"🌍 Footprint: {result:.2f} kg CO2/day")
 
-        st.success(f"🌍 Your Estimated Carbon Footprint: {result:.2f} kg CO2/day")
+# 💡 AI TIPS
+if st.button("🌱 Get Tips"):
+    result = calculate_footprint(distance, electricity, diet)
 
-        if result < 5:
-            st.info("✅ Great! Your carbon footprint is low.")
-        elif result < 10:
-            st.warning("⚠️ Moderate footprint. Try reducing it.")
-        else:
-            st.error("❌ High footprint! Take action now.")
+    with st.spinner("Generating tips..."):
+        tips = model.generate_content(
+            f"""
+            Travel: {distance} km
+            Electricity: {electricity}
+            Diet: {diet}
+            Footprint: {result:.2f}
 
-# 💡 AI SUGGESTIONS (Personalized)
-if st.button("🌱 Get Tips to Reduce Footprint"):
-    if distance == 0 and electricity == 0:
-        st.warning("⚠️ Please calculate your footprint first")
-    else:
-        result = calculate_footprint(distance, electricity, diet)
+            Give simple ways to reduce carbon footprint for a student.
+            """
+        )
+    st.write(tips.text)
 
-        with st.spinner("Generating AI tips..."):
-            tips = model.generate_content(
-                f"""
-                User Details:
-                - Daily Travel: {distance} km
-                - Electricity: {electricity} units/month
-                - Diet: {diet}
-                - Estimated Footprint: {result:.2f} kg CO2/day
+# 💬 CHAT
+st.subheader("💬 Ask AI")
 
-                Give simple, practical, student-friendly ways to reduce this footprint.
-                """
-            )
-        st.write(tips.text)
-
-# 💬 AI CHAT
-st.subheader("💬 Ask AI About Environment")
-
-user_input = st.text_input("Type your question here...")
+user_input = st.text_input("Ask anything about environment")
 
 if user_input:
-    with st.spinner("Thinking..."):
-        response = model.generate_content(
-            f"You are an environmental expert. Answer clearly and simply:\n{user_input}"
-        )
+    response = model.generate_content(user_input)
     st.write(response.text)
-
-# 🧪 BASIC TESTING
-st.subheader("🧪 Run Test")
-
-if st.checkbox("Run Sample Test"):
-    test_result = calculate_footprint(10, 100, "Vegetarian")
-    st.write(f"Test Output (10km, 100 units, Veg): {test_result}")
