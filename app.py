@@ -9,7 +9,13 @@ st.set_page_config(page_title="Carbon Footprint AI", layout="centered")
 ---------------- TITLE ----------------
 
 st.title("🌍 Carbon Footprint Awareness AI")
-st.markdown("Calculate your footprint and get smart suggestions to reduce it.")
+st.markdown("""
+
+🌱 About This App
+
+Calculate your carbon footprint based on daily activities and get AI-powered suggestions
+to reduce your environmental impact.
+""")
 
 ---------------- API KEY ----------------
 
@@ -35,13 +41,13 @@ help="Enter how many kilometers you travel daily"
 electricity = st.number_input(
 "⚡ Monthly Electricity Usage (units)",
 min_value=0.0,
-help="Enter monthly electricity usage in units (kWh)"
+help="Enter your monthly electricity consumption (kWh)"
 )
 
 diet = st.selectbox(
 "🍽️ Your Diet Type",
 ["Vegetarian", "Non-Vegetarian", "Vegan"],
-help="Diet impacts carbon emissions"
+help="Diet affects carbon emissions"
 )
 
 ---------------- CORE LOGIC ----------------
@@ -79,26 +85,29 @@ result = calculate_footprint(distance, electricity, diet)
 ---------------- AI TIPS ----------------
 
 if st.button("🌱 Get Smart Tips"):
+if distance == 0 and electricity == 0:
+st.warning("⚠️ Please enter data first")
+else:
 result = calculate_footprint(distance, electricity, diet)
 
-with st.spinner("Generating AI suggestions..."):
-    try:
-        prompt = f"""
-        A student has:
-        - Travel: {distance} km/day
-        - Electricity: {electricity} units/month
-        - Diet: {diet}
-        - Carbon Footprint: {result} kg CO2/day
+    with st.spinner("Generating AI suggestions..."):
+        try:
+            prompt = f"""
+            A student has:
+            - Travel: {distance} km/day
+            - Electricity: {electricity} units/month
+            - Diet: {diet}
+            - Carbon Footprint: {result} kg CO2/day
 
-        Give practical, simple and low-cost ways to reduce footprint.
-        """
+            Suggest simple, practical, and low-cost ways to reduce carbon footprint.
+            """
 
-        tips = model.generate_content(prompt)
-        st.subheader("💡 Personalized Tips")
-        st.write(tips.text)
+            tips = model.generate_content(prompt)
+            st.subheader("💡 Personalized Tips")
+            st.write(tips.text)
 
-    except Exception as e:
-        st.error("Error generating tips. Check API key or try again.")
+        except Exception:
+            st.error("❌ Error generating tips. Check API key or try again.")
 
 ---------------- CHAT ----------------
 
@@ -110,13 +119,14 @@ placeholder="e.g., How can I reduce carbon footprint in college?"
 )
 
 if user_input:
+with st.spinner("Thinking..."):
 try:
 response = model.generate_content(user_input)
 st.write(response.text)
-except:
-st.error("Failed to get response. Try again.")
+except Exception:
+st.error("❌ Failed to get response. Try again.")
 
 ---------------- FOOTER ----------------
 
 st.markdown("---")
-st.caption("Built for Carbon Awareness 🌱 | Optimized with caching & validation")
+st.caption("🌱 Built for Carbon Awareness | Optimized with caching, validation & clean UI")
